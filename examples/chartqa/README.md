@@ -1,4 +1,5 @@
 # ChartQA Example
+
 [![chartqa workflow status](https://github.com/microsoft/agent-lightning/actions/workflows/badge-chartqa.yml/badge.svg)](https://github.com/microsoft/agent-lightning/actions/workflows/examples-chartqa.yml)
 
 This example demonstrates training a visual reasoning agent on the ChartQA dataset using Agent-Lightning with the VERL algorithm. The agent uses a two-step pipeline to answer questions about charts:
@@ -8,9 +9,7 @@ This example demonstrates training a visual reasoning agent on the ChartQA datas
 
 ## Requirements
 
-- Single node with 2 GPUs (40GB each recommended)
-
-Install dependencies with:
+This example requires a single node with at least 2x 40GB GPUs. Install dependencies with:
 
 ```bash
 uv sync --frozen \
@@ -41,36 +40,76 @@ This downloads the ChartQA dataset from HuggingFace (`HuggingFaceM4/ChartQA`), s
 - Test: ~2,500 pairs
 - Chart types: Bar, line, pie, scatter, etc.
 
-## Files
+## Included Files
 
-| File | Description |
-|------|-------------|
-| `chartqa_agent.py` | Two-step agent (extract → compute) |
+| File/Directory | Description |
+|----------------|-------------|
+| `chartqa_agent.py` | Two-step chart reasoning agent (extract → compute) |
+| `train_chartqa_agent.py` | Training script using VERL algorithm with configurable hyperparameters (debug, qwen) |
+| `debug_chartqa_agent.py` | Debugging script to test the agent with cloud APIs or a local vLLM server |
+| `prepare_data.py` | Script to download ChartQA dataset from HuggingFace and prepare parquet files |
 | `prompts.py` | Prompt templates for extract and compute steps |
-| `train_chartqa_agent.py` | Training script for Qwen2.5-VL-3B |
-| `dev_chartqa_agent.py` | Development/debug script for quick smoke testing |
-| `prepare_data.py` | Script to download and prepare the dataset |
-| `multimodal_utils.py` | Image encoding utilities |
-| `env_var.py` | Environment configuration |
+| `multimodal_utils.py` | Utility functions for encoding images to base64 |
+| `env_var.py` | Environment variables and configurations |
+| `data/` | Directory containing images and parquet files after download |
 
-## Training
+## Running Examples
 
-**Step 1: Start the external store server** (in a separate terminal):
+### Debugging with Cloud API (Default)
+
+For quick testing with OpenAI or other cloud APIs (no local GPU required):
+
+```bash
+export OPENAI_API_KEY=<your-api-key>
+python debug_chartqa_agent.py
+```
+
+For other providers (Azure, etc.), set `OPENAI_API_BASE`:
+
+```bash
+export OPENAI_API_BASE=https://your-resource.openai.azure.com/v1
+export OPENAI_MODEL=gpt-4o
+python debug_chartqa_agent.py
+```
+
+### Debugging with Local Model
+
+To test the agent with a local vLLM server:
+
+```bash
+# Start a vLLM server (specify image path for vision model)
+export CHARTQA_DATA_DIR=<path to chartqa data>
+vllm serve Qwen/Qwen2.5-VL-3B-Instruct \
+    --gpu-memory-utilization 0.6 \
+    --max-model-len 4096 \
+    --allowed-local-media-path $CHARTQA_DATA_DIR \
+    --enable-prefix-caching \
+    --port 8088
+
+# Run the agent
+OPENAI_API_BASE=http://localhost:8088/v1 \
+    OPENAI_MODEL=Qwen/Qwen2.5-VL-3B-Instruct \
+    python debug_chartqa_agent.py
+```
+
+### Training with Local Model
+
+```bash
+python train_chartqa_agent.py debug --n-runners 32
+```
+
+You can also use an external store server (recommended for distributed setups), first start the store:
+
 ```bash
 agl store --port 4747
 ```
 
-**Step 2: Run training** (2 GPUs):
+Then run the training script with the external store address:
+
 ```bash
 AGL_MANAGED_STORE=0 python train_chartqa_agent.py qwen --n-runners 32 --external-store-address http://localhost:4747
 ```
 
-### Development/Debug Mode
+If you want to track experiments with Weights & Biases, set the `WANDB_API_KEY` environment variable before training.
 
-For quick smoke testing during development:
-
-```bash
-AGL_MANAGED_STORE=0 python dev_chartqa_agent.py --n-runners 32 --external-store-address http://localhost:4747
-```
-
-
+The script automatically launches agent workers and the training server. The agent workers execute chart reasoning rollouts using the vision-language model, while the training server applies the VERL algorithm (GRPO) to improve the model based on answer accuracy rewards.
