@@ -94,17 +94,19 @@ OPENAI_API_BASE=http://localhost:8088/v1 \
 
 ### Training with Local Model
 
-```bash
-python train_chartqa_agent.py debug --n-runners 32
-```
+You can use an external store server (recommended for distributed setups)
 
-You can also use an external store server (recommended for distributed setups), first start the store:
 
 ```bash
 agl store --port 4747
 ```
+Debug script with the external store address with 10 training steps:
 
-Then run the training script with the external store address:
+```bash
+AGL_MANAGED_STORE=0 python train_chartqa_agent.py debug --n-runners 32 --external-store-address http://localhost:4747
+```
+
+Run full training with: 
 
 ```bash
 AGL_MANAGED_STORE=0 python train_chartqa_agent.py qwen --n-runners 32 --external-store-address http://localhost:4747
