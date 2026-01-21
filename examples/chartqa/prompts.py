@@ -4,7 +4,6 @@
 
 from langchain_core.prompts import ChatPromptTemplate
 
-
 EXTRACT_DATA_PROMPT = ChatPromptTemplate(
     [
         (

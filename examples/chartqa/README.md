@@ -106,7 +106,7 @@ Debug script with the external store address with 10 training steps:
 AGL_MANAGED_STORE=0 python train_chartqa_agent.py debug --n-runners 32 --external-store-address http://localhost:4747
 ```
 
-Run full training with: 
+Run full training with:
 
 ```bash
 AGL_MANAGED_STORE=0 python train_chartqa_agent.py qwen --n-runners 32 --external-store-address http://localhost:4747
