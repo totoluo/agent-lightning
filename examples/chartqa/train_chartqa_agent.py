@@ -98,7 +98,6 @@ def config_ci() -> Dict[str, Any]:
 
     config = deepcopy(RL_CONFIG)
     config["trainer"]["total_training_steps"] = 4
-    config["trainer"]["val_before_train"] = True
     config["trainer"]["test_freq"] = 2
     config["trainer"]["experiment_name"] = EXPERIMENT_NAME
     config["trainer"]["project_name"] = PROJECT_NAME
@@ -116,7 +115,6 @@ def config_debug() -> Dict[str, Any]:
 def config_qwen() -> Dict[str, Any]:
     """Return a Qwen-focused config with validation before each epoch."""
     config = deepcopy(RL_CONFIG)
-    config["trainer"]["val_before_train"] = True
     config["trainer"]["n_gpus_per_node"] = 2
     config["trainer"]["total_epochs"] = 2
     config["trainer"]["test_freq"] = 32
