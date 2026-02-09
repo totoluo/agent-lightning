@@ -99,8 +99,15 @@ def config_ci() -> Dict[str, Any]:
     config = deepcopy(RL_CONFIG)
     config["trainer"]["total_training_steps"] = 4
     config["trainer"]["test_freq"] = 2
+    config["trainer"]["n_gpus_per_node"] = 1
+    config["actor_rollout_ref"]["rollout"]["tensor_model_parallel_size"] = 1
+    config["actor_rollout_ref"]["rollout"]["gpu_memory_utilization"] = 0.5
+    config["data"]["train_batch_size"] = 4
+    config["actor_rollout_ref"]["rollout"]["n"] = 4
+    config["actor_rollout_ref"]["actor"]["ppo_mini_batch_size"] = 4
     config["trainer"]["experiment_name"] = EXPERIMENT_NAME
     config["trainer"]["project_name"] = PROJECT_NAME
+       
     return config
 
 
