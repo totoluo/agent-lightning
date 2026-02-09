@@ -107,7 +107,7 @@ def config_ci() -> Dict[str, Any]:
     config["actor_rollout_ref"]["actor"]["ppo_mini_batch_size"] = 4
     config["trainer"]["experiment_name"] = EXPERIMENT_NAME
     config["trainer"]["project_name"] = PROJECT_NAME
-       
+
     return config
 
 
