@@ -189,7 +189,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
         try:
             result = self._ensure_model().invoke(messages)
-            response = result.content if hasattr(result, "content") else str(result)
+            response = str(result.content) if hasattr(result, "content") else str(result)
         except Exception as e:
             logger.error(f"Failed to invoke model: {e}")
             response = "<answer>error</answer>"
@@ -197,7 +197,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
         if self.debug:
             termcolor.cprint(f"[Model Output] {response[:300]}...", "magenta")
 
-        return response  # type: ignore
+        return response
 
     def invoke_text_only(self, prompt_text: str) -> str:
         """Invoke the model with text only."""
@@ -208,7 +208,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
         try:
             result = self._ensure_model().invoke(messages)
-            response = result.content if hasattr(result, "content") else str(result)
+            response = str(result.content) if hasattr(result, "content") else str(result)
         except Exception as e:
             logger.error(f"Failed to invoke model: {e}")
             response = "<answer>error</answer>"
@@ -216,7 +216,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
         if self.debug:
             termcolor.cprint(f"[Model Text Output] {response[:300]}...", "green")
 
-        return response  # type: ignore
+        return response
 
     def extract_content(self, text: str, tag: str) -> str:
         """Extract content between XML-style tags."""
@@ -292,7 +292,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
     def extract_data(self, state: ChartQAState) -> ChartQAState:
         """Step 1 [model + image]: Extract all relevant data from chart."""
-        prompt: Any = EXTRACT_DATA_PROMPT.invoke({"question": state["question"]})
+        prompt: Any = EXTRACT_DATA_PROMPT.invoke({"question": state["question"]})  # type: ignore[reportUnknownMemberType]
         prompt_text = "\n".join(msg.content for msg in prompt.messages)  # type: ignore
 
         result_text = self.invoke_with_image(prompt_text, state["image_path"])
@@ -314,7 +314,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
     def compute_answer(self, state: ChartQAState) -> ChartQAState:
         """Step 2 [model text-only]: Compute answer from extracted data."""
-        prompt: Any = COMPUTE_ANSWER_PROMPT.invoke(
+        prompt: Any = COMPUTE_ANSWER_PROMPT.invoke(  # type: ignore[reportUnknownMemberType]
             {"question": state["question"], "extracted_data": state["extracted_data"]}
         )
         prompt_text = "\n".join(msg.content for msg in prompt.messages)  # type: ignore
@@ -356,8 +356,8 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
         builder = StateGraph(ChartQAState)
 
         # Two-step: extract then compute
-        builder.add_node("extract_data", self.extract_data)
-        builder.add_node("compute_answer", self.compute_answer)
+        builder.add_node("extract_data", self.extract_data)  # type: ignore[reportUnknownMemberType]
+        builder.add_node("compute_answer", self.compute_answer)  # type: ignore[reportUnknownMemberType]
         builder.add_edge(START, "extract_data")
         builder.add_edge("extract_data", "compute_answer")
         builder.add_edge("compute_answer", END)
@@ -390,8 +390,8 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
         try:
             handler = self.tracer.get_langchain_handler()
-            result = self.graph().invoke(
-                {"question": question, "image_path": image_path},
+            result = self.graph().invoke(  # type: ignore[reportUnknownMemberType]
+                {"question": question, "image_path": image_path},  # type: ignore[reportArgumentType]
                 {"callbacks": [handler] if handler else [], "recursion_limit": 100},
             )
         except Exception as e:
