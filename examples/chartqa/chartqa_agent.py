@@ -189,7 +189,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
         try:
             result = self._ensure_model().invoke(messages)
-            response = str(result.content) if hasattr(result, "content") else str(result)
+            response = str(result.content) if hasattr(result, "content") else str(result)  # type: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         except Exception as e:
             logger.error(f"Failed to invoke model: {e}")
             response = "<answer>error</answer>"
@@ -208,7 +208,7 @@ class ChartQAAgent(agl.LitAgent[Dict[str, Any]]):
 
         try:
             result = self._ensure_model().invoke(messages)
-            response = str(result.content) if hasattr(result, "content") else str(result)
+            response = str(result.content) if hasattr(result, "content") else str(result)  # type: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         except Exception as e:
             logger.error(f"Failed to invoke model: {e}")
             response = "<answer>error</answer>"
